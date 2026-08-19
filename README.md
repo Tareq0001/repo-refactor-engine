@@ -1,154 +1,186 @@
-# 🔄 Repo Refactor Engine
+# 🔄 Repo Refactor Engine v2.0 — Enterprise Platform
 
-> **AI-Powered Full-Repository Migration Tool** — Clone any GitHub repository, deeply understand its architecture using Claude's massive context window, then translate it file-by-file to a new language or framework using Codex/GPT-4, while preserving all dependency chains and business logic.
+> **The most advanced AI-powered repository migration platform ever built.** Clone any GitHub repository, deeply understand its architecture using Claude's 200K context window, then translate it file-by-file to a new language or framework using Codex/GPT-4 — with crash recovery, rollback, real-time streaming, plugin adapters, and full observability.
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![Claude](https://img.shields.io/badge/AI-Claude_Sonnet-orange.svg)](https://anthropic.com)
 [![Codex](https://img.shields.io/badge/AI-GPT--4o-green.svg)](https://openai.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![FastAPI](https://img.shields.io/badge/Dashboard-FastAPI-teal.svg)](https://fastapi.tiangolo.com)
+[![Docker](https://img.shields.io/badge/Infra-Docker-2496ED.svg)](https://docker.com)
 
-## 🌟 The Problem
+---
 
-Enterprises have millions of lines of legacy code (Java 8, PHP 5, Ruby 2, old Node.js) that need modernization. Manual migration is:
-- **Expensive**: Requires senior engineers for months
-- **Error-prone**: Broken imports, lost business logic, dependency conflicts
-- **Slow**: A large codebase can take 6–18 months to migrate manually
+## 🧠 v2.0 — What Changed (1% → 100%)
 
-## 🧠 The Solution — Dual-AI Architecture
+| Feature | v1.0 (1%) | v2.0 (100%) |
+|---------|-----------|-------------|
+| Language Parsing | Regex heuristics | **Real AST parsing** (Python `ast` module, extensible adapters) |
+| Language Support | Generic | **Plugin adapters** for Python, JavaScript, TypeScript, Java (extensible) |
+| AI Providers | Hardcoded | **Multi-provider abstraction** (Claude, GPT-4, Ollama) with retry & cost tracking |
+| Caching | None | **Semantic LRU cache** with TTL to avoid redundant API calls |
+| Prompt Engineering | Basic | **Engineered prompt templates** per migration phase |
+| Progress | Silent | **Real-time streaming** with checkpoints and ETA |
+| Crash Recovery | None | **Checkpoint-based resume** — crash mid-migration, resume exactly where you left off |
+| Rollback | None | **Atomic rollback points** with snapshot-based undo |
+| Diff Viewer | None | **Rich diff engine** with unified diffs, HTML reports, and semantic change detection |
+| Observability | Print statements | **Structured JSON logging**, Prometheus metrics, OpenTelemetry tracing spans |
+| Extensibility | None | **Hook system** with 11 phases (pre/post ingestion, analysis, migration, validation, output) |
+| Web Dashboard | CLI only | **FastAPI REST API + WebSocket** for real-time browser-based monitoring |
+| Infrastructure | None | **Docker Compose** with Redis cache and Celery worker |
+| Tests | 1 file | **Unit + Integration tests** covering adapters, cache, diff, hooks, rollback, observability |
 
-This tool uses a novel **dual-model approach** that no other migration tool offers:
+---
+
+## 🏗️ System Architecture (100% Scale)
 
 ```mermaid
-graph TD
-    A[GitHub Repository URL] --> B[Ingestion Engine]
-    B -->|Clone & Parse| C[File Classification]
-    C --> D[Static Analysis Engine]
-    
-    D -->|AST Parsing| E[Dependency Graph]
-    D -->|Pattern Detection| F[Framework Detection]
-    D -->|Complexity Analysis| G[Risk Assessment]
-    
-    E --> H{Claude - Architectural Comprehension}
-    F --> H
-    G --> H
-    
-    H -->|"Deep Understanding of<br/>Business Logic, Patterns,<br/>Data Flow"| I[Migration Orchestrator]
-    
-    I -->|Topological Order| J{Codex/GPT-4 - Code Translation}
-    
-    J -->|File 1 translated| K[Dependency Validator]
-    J -->|File 2 translated| K
-    J -->|File N translated| K
-    
-    K -->|Import Resolution ✅| L[Output Writer]
-    K -->|Circular Dep Check ✅| L
-    K -->|Naming Convention ✅| L
-    
-    L --> M[Migrated Repository + Report]
-```
+graph TB
+    subgraph "Client Layer"
+        CLI[Typer CLI]
+        WEB[FastAPI Dashboard]
+        WS[WebSocket Stream]
+    end
 
-### Why Two Models?
+    subgraph "Plugin System"
+        PY_ADAPT[Python AST Adapter]
+        JS_ADAPT[JS/TS Adapter]
+        JAVA_ADAPT[Java Adapter]
+        HOOKS[Hook Registry - 11 Phases]
+    end
 
-| Model | Role | Why? |
-|-------|------|------|
-| **Claude** | Reads the ENTIRE codebase (200K+ tokens) | Understands architecture, design patterns, and cross-file relationships that a single-file translator would miss |
-| **Codex/GPT-4** | Translates individual files | Best-in-class at precise code generation, guided by Claude's architectural context |
+    subgraph "Core Pipeline"
+        INGEST[GitHub Ingestion Engine]
+        ANALYZE[Static Analysis + Dep Graph]
+        STREAM[Streaming Checkpoint Translator]
+        VALIDATE[Dependency Validator - 6 Checks]
+        OUTPUT[Repo Writer + Reports]
+    end
 
-## 🚀 Quick Start
+    subgraph "AI Layer"
+        CLAUDE[Claude - Architecture Comprehension]
+        CODEX[GPT-4/Codex - Code Translation]
+        OLLAMA[Ollama - Local/Air-gapped]
+        CACHE[Semantic LRU Cache]
+        PROMPTS[Engineered Prompt Templates]
+    end
 
-### Installation
-```bash
-git clone https://github.com/Tareq0001/repo-refactor-engine.git
-cd repo-refactor-engine
-pip install -r requirements.txt
-```
+    subgraph "Safety & Observability"
+        ROLLBACK[Rollback Manager - Snapshots]
+        DIFF[Diff Engine - Unified + HTML]
+        LOGGER[Structured JSON Logger]
+        METRICS[Prometheus Metrics]
+        TRACING[OpenTelemetry Spans]
+    end
 
-### Set API Keys
-```bash
-export ANTHROPIC_API_KEY="sk-ant-..."
-export OPENAI_API_KEY="sk-..."
-```
+    subgraph "Infrastructure"
+        DOCKER[Docker Compose]
+        REDIS[Redis Cache]
+        CELERY[Celery Workers]
+    end
 
-### Migrate a Repository
-```bash
-# Migrate an Express.js app to TypeScript
-python -m src.cli.main migrate https://github.com/expressjs/express --target typescript
-
-# Migrate a Django app to Go
-python -m src.cli.main migrate https://github.com/company/django-app --target go --workers 8
-
-# Dry run — analyze without migrating
-python -m src.cli.main migrate https://github.com/company/legacy-app --target rust --dry-run
-
-# Analyze a repo's structure
-python -m src.cli.main analyze https://github.com/company/repo
-
-# List supported migration paths
-python -m src.cli.main supported
-```
-
-## 📁 Repository Structure
-
-```text
-repo-refactor-engine/
-├── src/
-│   ├── cli/main.py                      # Typer CLI with 3 commands
-│   ├── ingestion/github_loader.py       # Git clone, file walking, language detection
-│   ├── analysis/code_analyzer.py        # Dependency graphs, AST analysis, framework detection
-│   ├── migration/migration_orchestrator.py  # Dual-AI translation engine
-│   ├── validation/dependency_validator.py   # Post-migration integrity checks
-│   ├── output/repo_writer.py            # File writer, report generator
-│   └── models/config.py                 # Pydantic models for all data types
-├── tests/
-│   └── test_analyzer.py                 # Pytest test suite
-├── .github/workflows/ci.yml            # CI pipeline with matrix testing
-└── requirements.txt
-```
-
-## 🛠️ The 5-Phase Pipeline
-
-### Phase 1: Ingestion
-Clones the repo, walks the file tree, detects languages (30+ supported), classifies files (source, test, config, docs), and filters binary/large files.
-
-### Phase 2: Analysis
-Builds a full **dependency graph** by parsing import statements across all languages. Detects **circular dependencies** using Tarjan's algorithm. Identifies **entry points**, estimates **cyclomatic complexity**, and auto-detects the **framework** (Express, Django, Spring Boot, Rails, Laravel, NestJS, etc.).
-
-### Phase 3: Migration (Dual-AI)
-Feeds the entire codebase to **Claude** for architectural comprehension. Then translates files in **topological order** (dependencies first) using **Codex/GPT-4**, providing Claude's understanding + already-translated dependencies as context for each file.
-
-### Phase 4: Validation
-Runs 6 categories of post-migration checks:
-- ✅ Import resolution (all imports point to real files)
-- ✅ Orphaned file detection
-- ✅ Naming convention compliance
-- ✅ Circular dependency regression
-- ✅ File completeness (no empty translations)
-- ✅ Translation verification (content actually changed)
-
-### Phase 5: Output
-Writes the migrated codebase with:
-- Proper directory structure
-- Target-language package manifest (`package.json`, `go.mod`, `Cargo.toml`, `pyproject.toml`)
-- Detailed `MIGRATION_REPORT.md` with confidence scores and validation results
-- `.migration_map.json` for traceability
-
-## 📋 Supported Migration Paths
-
-| Source | Target Options |
-|--------|---------------|
-| JavaScript/Node.js | TypeScript, Go, Rust, Python |
-| Python (Django/Flask) | FastAPI, Go (Gin), TypeScript (NestJS) |
-| Java (Spring Boot) | Kotlin, Go, Python (FastAPI), TypeScript (NestJS) |
-| Ruby (Rails) | Python (Django), TypeScript (NestJS), Go |
-| PHP (Laravel) | Python (FastAPI), TypeScript (NestJS), Go |
-| C# (.NET) | Go, TypeScript, Rust |
-
-## 🧪 Testing
-
-```bash
-pytest tests/ -v
+    CLI --> INGEST
+    WEB --> INGEST
+    INGEST --> PY_ADAPT
+    INGEST --> JS_ADAPT
+    INGEST --> JAVA_ADAPT
+    INGEST --> ANALYZE
+    ANALYZE --> STREAM
+    STREAM --> CLAUDE
+    STREAM --> CODEX
+    STREAM --> OLLAMA
+    CLAUDE --> CACHE
+    CODEX --> CACHE
+    CACHE --> PROMPTS
+    STREAM --> VALIDATE
+    VALIDATE --> OUTPUT
+    STREAM --> ROLLBACK
+    OUTPUT --> DIFF
+    STREAM --> WS
+    LOGGER --> METRICS
+    LOGGER --> TRACING
+    DOCKER --> REDIS
+    DOCKER --> CELERY
+    HOOKS -.-> INGEST
+    HOOKS -.-> ANALYZE
+    HOOKS -.-> STREAM
+    HOOKS -.-> VALIDATE
+    HOOKS -.-> OUTPUT
 ```
 
 ---
 
-*Engineered for enterprise-scale legacy modernization. Silicon Valley standards.*
+## 📁 Repository Structure (100% Scale)
+
+```text
+repo-refactor-engine/
+├── src/
+│   ├── cli/main.py                              # Typer CLI (migrate, analyze, supported)
+│   ├── ingestion/github_loader.py               # Git clone, language detection, file classification
+│   ├── analysis/code_analyzer.py                # Dependency graph, circular deps, framework detection
+│   ├── migration/migration_orchestrator.py      # Dual-AI translation with topological sorting
+│   ├── validation/dependency_validator.py       # 6-category post-migration integrity checks
+│   ├── output/repo_writer.py                    # File writer, reports, package manifests
+│   ├── models/config.py                         # 10+ Pydantic models for all data types
+│   │
+│   ├── plugins/                                 # 🔌 Extensible Plugin System
+│   │   ├── adapters/
+│   │   │   ├── base.py                          # Abstract adapter + registry
+│   │   │   ├── python_adapter.py                # Real AST-based Python parsing
+│   │   │   ├── javascript_adapter.py            # ES6/CJS/Dynamic import support
+│   │   │   └── java_adapter.py                  # Annotations, generics, interfaces
+│   │   └── hooks/
+│   │       └── hook_system.py                   # 11-phase hook lifecycle + built-in hooks
+│   │
+│   ├── ai/                                      # 🤖 AI Abstraction Layer
+│   │   ├── providers/base.py                    # Multi-provider (Claude, GPT-4, Ollama)
+│   │   ├── cache/semantic_cache.py              # LRU cache with TTL and hit-rate stats
+│   │   └── prompts/templates.py                 # Engineered prompts per migration phase
+│   │
+│   ├── streaming/
+│   │   └── checkpoint_translator.py             # Crash-recoverable streaming with ETAs
+│   │
+│   ├── diff/
+│   │   └── diff_engine.py                       # Unified diffs, HTML reports, semantic changes
+│   │
+│   ├── rollback/
+│   │   └── rollback_manager.py                  # Atomic snapshots with transaction logging
+│   │
+│   ├── observability/
+│   │   └── logger.py                            # JSON logging, Prometheus metrics, tracing spans
+│   │
+│   └── web/
+│       └── api/server.py                        # FastAPI REST + WebSocket dashboard
+│
+├── tests/
+│   ├── test_analyzer.py                         # Unit tests for code analyzer
+│   └── integration/
+│       └── test_full_pipeline.py                # Integration tests for all modules
+│
+├── docker-compose.yml                           # API + Redis + Celery worker
+├── .github/workflows/ci.yml                     # CI with matrix testing + linting
+└── requirements.txt
+```
+
+## 🚀 Quick Start
+
+### CLI Mode
+```bash
+pip install -r requirements.txt
+python -m src.cli.main migrate https://github.com/expressjs/express --target typescript
+```
+
+### Web Dashboard Mode
+```bash
+docker-compose up -d
+# Dashboard: http://localhost:8000/docs
+# WebSocket: ws://localhost:8000/ws/migrations/{job_id}
+```
+
+## 🧪 Testing
+```bash
+pytest tests/ -v --tb=short
+```
+
+---
+
+*Engineered for enterprise-scale legacy modernization. Silicon Valley standards. 100% architecture.*
