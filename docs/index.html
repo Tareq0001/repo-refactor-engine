@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repo Refactor Engine — AI-Powered Code Migration Platform</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --accent: #6c63ff;
+            --accent-glow: rgba(108, 99, 255, 0.3);
+            --accent2: #00d2ff;
+            --accent3: #f72585;
+            --text-primary: #e8e8f0;
+            --text-secondary: #a0a0b8;
+            --border: rgba(108, 99, 255, 0.15);
+            --success: #00e676;
+            --warning: #ffa726;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* === ANIMATED BACKGROUND === */
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(108,99,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(108,99,255,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .glow-orb {
+            position: fixed;
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+            z-index: 0;
+            pointer-events: none;
+            animation: float 15s ease-in-out infinite;
+        }
+        .glow-orb.purple { background: var(--accent); top: -200px; left: -100px; }
+        .glow-orb.blue { background: var(--accent2); bottom: -200px; right: -100px; animation-delay: -7s; }
+        .glow-orb.pink { background: var(--accent3); top: 50%; left: 50%; animation-delay: -3s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        /* === NAV === */
+        nav {
+            position: fixed; top: 0; width: 100%;
+            padding: 20px 60px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(15, 15, 26, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+        .logo {
+            font-size: 1.3rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .nav-links a {
+            color: var(--text-secondary); text-decoration: none;
+            margin-left: 30px; font-size: 0.9rem; font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--accent); }
+
+        /* === HERO === */
+        .hero {
+            position: relative; z-index: 1;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center; padding: 120px 20px 80px;
+        }
+        .badge {
+            display: inline-block; padding: 6px 16px;
+            background: rgba(108,99,255,0.1); border: 1px solid var(--border);
+            border-radius: 20px; font-size: 0.8rem; color: var(--accent);
+            margin-bottom: 24px; font-weight: 600;
+        }
+        .hero h1 {
+            font-size: 4rem; font-weight: 900;
+            line-height: 1.1; max-width: 900px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent2) 50%, var(--accent) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 24px;
+        }
+        .hero p {
+            font-size: 1.2rem; color: var(--text-secondary);
+            max-width: 650px; line-height: 1.7; margin-bottom: 40px;
+        }
+        .cta-group { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .btn {
+            padding: 14px 32px; border-radius: 12px;
+            font-size: 1rem; font-weight: 700;
+            text-decoration: none; transition: all 0.3s;
+            cursor: pointer; border: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            color: white; box-shadow: 0 4px 30px var(--accent-glow);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 40px var(--accent-glow); }
+        .btn-secondary {
+            background: transparent; color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* === TERMINAL PREVIEW === */
+        .terminal {
+            margin-top: 60px; max-width: 750px; width: 100%;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .terminal-header {
+            padding: 12px 16px; background: rgba(0,0,0,0.3);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot.red { background: #f38ba8; }
+        .dot.yellow { background: #f9e2af; }
+        .dot.green { background: #a6e3a1; }
+        .terminal-body {
+            padding: 20px 24px; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem; line-height: 1.8;
+        }
+        .terminal-body .prompt { color: var(--success); }
+        .terminal-body .cmd { color: var(--text-primary); }
+        .terminal-body .output { color: var(--text-secondary); }
+        .terminal-body .highlight { color: var(--accent2); }
+        .terminal-body .accent { color: var(--accent); }
+
+        /* === SECTIONS === */
+        section {
+            position: relative; z-index: 1;
+            padding: 100px 60px;
+            max-width: 1200px; margin: 0 auto;
+        }
+        .section-label {
+            font-size: 0.8rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 3px;
+            color: var(--accent); margin-bottom: 12px;
+        }
+        section h2 {
+            font-size: 2.5rem; font-weight: 800;
+            margin-bottom: 20px;
+        }
+        section .subtitle {
+            font-size: 1.1rem; color: var(--text-secondary);
+            max-width: 600px; line-height: 1.7; margin-bottom: 50px;
+        }
+
+        /* === STATS === */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+            margin-bottom: 80px;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 32px; text-align: center;
+            transition: all 0.3s;
+        }
+        .stat-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+        .stat-number {
+            font-size: 3rem; font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-label { font-size: 0.9rem; color: var(--text-secondary); margin-top: 8px; }
+
+        /* === FEATURE CARDS === */
+        .features-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+        }
+        .feature-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 32px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .feature-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 20px;
+            background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,210,255,0.1));
+        }
+        .feature-card h3 { font-size: 1.2rem; margin-bottom: 12px; }
+        .feature-card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
+
+        /* === PIPELINE === */
+        .pipeline {
+            display: flex; gap: 16px; overflow-x: auto;
+            padding: 20px 0; margin-bottom: 60px;
+        }
+        .pipeline-step {
+            flex: 0 0 200px; padding: 24px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; text-align: center;
+            position: relative;
+        }
+        .pipeline-step::after {
+            content: '→'; position: absolute;
+            right: -14px; top: 50%; transform: translateY(-50%);
+            color: var(--accent); font-size: 1.5rem; font-weight: bold;
+        }
+        .pipeline-step:last-child::after { display: none; }
+        .step-number {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white; font-weight: 800; font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px;
+        }
+        .pipeline-step h4 { font-size: 0.95rem; margin-bottom: 8px; }
+        .pipeline-step p { font-size: 0.78rem; color: var(--text-secondary); }
+
+        /* === COMPARISON TABLE === */
+        .comparison-table {
+            width: 100%; border-collapse: separate; border-spacing: 0;
+            background: var(--bg-card); border-radius: 16px;
+            overflow: hidden; border: 1px solid var(--border);
+        }
+        .comparison-table th {
+            padding: 16px 24px; text-align: left;
+            background: rgba(108,99,255,0.08);
+            font-size: 0.85rem; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--accent);
+        }
+        .comparison-table td {
+            padding: 14px 24px; border-top: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        .comparison-table tr:hover td { background: rgba(108,99,255,0.03); }
+        .tag-old { color: var(--accent3); font-weight: 600; }
+        .tag-new { color: var(--success); font-weight: 600; }
+
+        /* === TECH STACK === */
+        .tech-grid {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px;
+        }
+        .tech-item {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; text-align: center;
+            transition: all 0.3s;
+        }
+        .tech-item:hover { border-color: var(--accent); }
+        .tech-item .icon { font-size: 2rem; margin-bottom: 8px; }
+        .tech-item .name { font-size: 0.85rem; font-weight: 600; }
+
+        /* === FOOTER === */
+        footer {
+            position: relative; z-index: 1;
+            text-align: center; padding: 60px 20px;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary); font-size: 0.85rem;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            nav { padding: 16px 20px; }
+            .hero h1 { font-size: 2.2rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .features-grid { grid-template-columns: 1fr; }
+            .tech-grid { grid-template-columns: repeat(3, 1fr); }
+            section { padding: 60px 20px; }
+            .pipeline { flex-direction: column; align-items: center; }
+            .pipeline-step::after { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="glow-orb purple"></div>
+<div class="glow-orb blue"></div>
+<div class="glow-orb pink"></div>
+
+<!-- NAV -->
+<nav>
+    <div class="logo">🔄 Refactor Engine</div>
+    <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#pipeline">Pipeline</a>
+        <a href="#comparison">v1 vs v2</a>
+        <a href="#tech">Tech Stack</a>
+        <a href="https://github.com/Tareq0001/repo-refactor-engine" target="_blank">GitHub ↗</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+    <span class="badge">✨ v2.0 — Enterprise Platform Release</span>
+    <h1>Migrate Entire Codebases With AI Precision</h1>
+    <p>Clone any GitHub repository. Let Claude understand every line of architecture. Let Codex translate it flawlessly to a new language — without breaking a single import.</p>
+    <div class="cta-group">
+        <a href="https://github.com/Tareq0001/repo-refactor-engine" class="btn btn-primary" target="_blank">View on GitHub</a>
+        <a href="#pipeline" class="btn btn-secondary">See How It Works</a>
+    </div>
+
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+        </div>
+        <div class="terminal-body">
+            <div><span class="prompt">$</span> <span class="cmd">refactor-engine migrate https://github.com/company/legacy-java --target python-fastapi</span></div>
+            <br>
+            <div><span class="accent">🔄 Repo Refactor Engine v2.0.0</span></div>
+            <br>
+            <div><span class="highlight">✓ Phase 1:</span> <span class="output">Ingested 847 files (Java, XML, Properties)</span></div>
+            <div><span class="highlight">✓ Phase 2:</span> <span class="output">Mapped 2,341 dependency edges — Spring Boot detected</span></div>
+            <div><span class="highlight">✓ Phase 3:</span> <span class="output">Translated 847 files to python-fastapi (Claude + GPT-4)</span></div>
+            <div><span class="highlight">✓ Phase 4:</span> <span class="output">Validation: 12/12 checks passed</span></div>
+            <div><span class="highlight">✓ Phase 5:</span> <span class="output">Repository written to ./output</span></div>
+            <br>
+            <div><span class="accent">🎉 Migration complete!</span> <span class="output">847 files | 98.2% confidence | $4.12 API cost</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- STATS -->
+<section>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">3,500+</div>
+            <div class="stat-label">Lines of Code</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">12</div>
+            <div class="stat-label">Architecture Modules</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">30+</div>
+            <div class="stat-label">Languages Supported</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">5</div>
+            <div class="stat-label">Pipeline Phases</div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+    <div class="section-label">Capabilities</div>
+    <h2>Enterprise-Grade Features</h2>
+    <p class="subtitle">Every feature a production migration platform needs — from crash recovery to real-time observability.</p>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🧠</div>
+            <h3>Dual-AI Architecture</h3>
+            <p>Claude reads the entire codebase for architectural comprehension. GPT-4 translates each file with that context — a novel approach no other tool offers.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🔌</div>
+            <h3>Plugin Adapter System</h3>
+            <p>Real AST-based parsing for Python, JavaScript, TypeScript, and Java. Extensible registry pattern — add new languages by implementing one interface.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💾</div>
+            <h3>Checkpoint Recovery</h3>
+            <p>Crash mid-migration? Resume exactly where you left off. Every batch is checkpointed to disk with full state serialization.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">↩️</div>
+            <h3>Atomic Rollback</h3>
+            <p>Snapshot-based rollback points at every pipeline phase. One command to undo any migration stage with full transaction logging.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Rich Diff Reports</h3>
+            <p>Unified diffs, HTML side-by-side comparisons, and semantic change detection. See exactly what the AI changed and why.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📡</div>
+            <h3>Full Observability</h3>
+            <p>Structured JSON logging, Prometheus-compatible metrics, and OpenTelemetry tracing spans across every operation.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🪝</div>
+            <h3>11-Phase Hook System</h3>
+            <p>Register custom hooks at any pipeline stage — run linters, trigger Slack notifications, apply custom validators, or post-process files.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🌐</div>
+            <h3>Web Dashboard</h3>
+            <p>FastAPI REST API + WebSocket endpoint for real-time browser-based monitoring. Start migrations, track progress, manage rollbacks via HTTP.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💰</div>
+            <h3>Cost Tracking</h3>
+            <p>Automatic API cost estimation per provider. Know exactly how much a migration costs before it finishes. Semantic LRU cache reduces redundant calls.</p>
+        </div>
+    </div>
+</section>
+
+<!-- PIPELINE -->
+<section id="pipeline">
+    <div class="section-label">How It Works</div>
+    <h2>The 5-Phase Pipeline</h2>
+    <p class="subtitle">Each phase is independently testable, hookable, and rollback-safe.</p>
+
+    <div class="pipeline">
+        <div class="pipeline-step">
+            <div class="step-number">1</div>
+            <h4>Ingest</h4>
+            <p>Clone repo, detect languages, classify files, filter binaries</p>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-number">2</div>
+            <h4>Analyze</h4>
+            <p>Build dependency graph, detect framework, find circular deps</p>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-number">3</div>
+            <h4>Translate</h4>
+            <p>Claude comprehends architecture → GPT-4 translates in topological order</p>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-number">4</div>
+            <h4>Validate</h4>
+            <p>6 integrity checks: imports, orphans, naming, circular deps, completeness</p>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-number">5</div>
+            <h4>Output</h4>
+            <p>Write migrated repo, generate reports, create package manifests</p>
+        </div>
+    </div>
+</section>
+
+<!-- COMPARISON -->
+<section id="comparison">
+    <div class="section-label">Evolution</div>
+    <h2>v1.0 vs v2.0 Comparison</h2>
+    <p class="subtitle">From a prototype to a production-ready enterprise platform.</p>
+
+    <table class="comparison-table">
+        <thead>
+            <tr><th>Feature</th><th>v1.0 (1%)</th><th>v2.0 (100%)</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Language Parsing</td><td class="tag-old">Regex heuristics</td><td class="tag-new">Real AST parsing (Python ast module)</td></tr>
+            <tr><td>Language Support</td><td class="tag-old">Generic</td><td class="tag-new">Plugin adapters (Python, JS, TS, Java)</td></tr>
+            <tr><td>AI Providers</td><td class="tag-old">Hardcoded stubs</td><td class="tag-new">Multi-provider (Claude, GPT-4, Ollama) + retry</td></tr>
+            <tr><td>Caching</td><td class="tag-old">None</td><td class="tag-new">Semantic LRU cache with TTL</td></tr>
+            <tr><td>Crash Recovery</td><td class="tag-old">None</td><td class="tag-new">Checkpoint-based resume</td></tr>
+            <tr><td>Rollback</td><td class="tag-old">None</td><td class="tag-new">Atomic snapshots + transaction log</td></tr>
+            <tr><td>Diff Viewer</td><td class="tag-old">None</td><td class="tag-new">Unified + HTML + semantic diffs</td></tr>
+            <tr><td>Observability</td><td class="tag-old">Print statements</td><td class="tag-new">JSON logging, Prometheus, tracing</td></tr>
+            <tr><td>Extensibility</td><td class="tag-old">None</td><td class="tag-new">11-phase hook system</td></tr>
+            <tr><td>Dashboard</td><td class="tag-old">CLI only</td><td class="tag-new">FastAPI REST + WebSocket</td></tr>
+            <tr><td>Infrastructure</td><td class="tag-old">None</td><td class="tag-new">Docker Compose (Redis + Celery)</td></tr>
+            <tr><td>Tests</td><td class="tag-old">1 test file</td><td class="tag-new">Unit + Integration test suites</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- TECH STACK -->
+<section id="tech">
+    <div class="section-label">Built With</div>
+    <h2>Technology Stack</h2>
+    <p class="subtitle">Best-in-class tools for every layer of the platform.</p>
+
+    <div class="tech-grid">
+        <div class="tech-item"><div class="icon">🐍</div><div class="name">Python 3.11+</div></div>
+        <div class="tech-item"><div class="icon">⚡</div><div class="name">FastAPI</div></div>
+        <div class="tech-item"><div class="icon">🧠</div><div class="name">Claude API</div></div>
+        <div class="tech-item"><div class="icon">🤖</div><div class="name">GPT-4 / Codex</div></div>
+        <div class="tech-item"><div class="icon">🦙</div><div class="name">Ollama</div></div>
+        <div class="tech-item"><div class="icon">🐳</div><div class="name">Docker</div></div>
+        <div class="tech-item"><div class="icon">📊</div><div class="name">Prometheus</div></div>
+        <div class="tech-item"><div class="icon">🔴</div><div class="name">Redis</div></div>
+        <div class="tech-item"><div class="icon">🌿</div><div class="name">Celery</div></div>
+        <div class="tech-item"><div class="icon">📦</div><div class="name">Pydantic</div></div>
+        <div class="tech-item"><div class="icon">🧪</div><div class="name">PyTest</div></div>
+        <div class="tech-item"><div class="icon">⌨️</div><div class="name">Typer CLI</div></div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <p>Built by <a href="https://github.com/Tareq0001" target="_blank">Tareq</a> — Engineered to Silicon Valley standards.</p>
+    <p style="margin-top: 8px;">© 2026 Repo Refactor Engine. Open Source under MIT License.</p>
+</footer>
+
+</body>
+</html>
