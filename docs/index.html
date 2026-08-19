@@ -279,15 +279,92 @@
         footer a { color: var(--accent); text-decoration: none; }
 
         /* === RESPONSIVE === */
-        @media (max-width: 768px) {
-            nav { padding: 16px 20px; }
-            .hero h1 { font-size: 2.2rem; }
+        /* Table Wrapper for horizontal scrolling on small screens */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+        .comparison-table {
+            border: none;
+            border-radius: 0;
+            min-width: 600px; /* Ensures it scrolls instead of squishing too much */
+        }
+
+        /* Large Tablets / Small Laptops */
+        @media (max-width: 1024px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .tech-grid { grid-template-columns: repeat(4, 1fr); }
+            section { padding: 80px 40px; }
+            .hero h1 { font-size: 3.2rem; }
+        }
+
+        /* Tablets & Mobile Landscape */
+        @media (max-width: 768px) {
+            nav { 
+                padding: 16px 20px; 
+                flex-direction: column; 
+                gap: 12px; 
+                text-align: center;
+            }
+            .nav-links {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+            }
+            .nav-links a { margin-left: 0; }
+            .hero { padding-top: 140px; }
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.1rem; }
+            section { padding: 60px 20px; }
+            section h2 { font-size: 2rem; }
+            
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+            .stat-card { padding: 20px; }
+            .stat-number { font-size: 2.2rem; }
+            
             .features-grid { grid-template-columns: 1fr; }
             .tech-grid { grid-template-columns: repeat(3, 1fr); }
-            section { padding: 60px 20px; }
-            .pipeline { flex-direction: column; align-items: center; }
-            .pipeline-step::after { display: none; }
+            
+            .pipeline { 
+                flex-direction: column; 
+                align-items: center; 
+                overflow-x: visible;
+                gap: 24px;
+            }
+            .pipeline-step { 
+                width: 100%; 
+                max-width: 300px; 
+                flex: auto;
+            }
+            .pipeline-step::after { 
+                content: '↓'; 
+                right: auto; 
+                top: auto; 
+                bottom: -24px; 
+                left: 50%; 
+                transform: translateX(-50%); 
+            }
+            
+            .terminal { font-size: 0.75rem; }
+            .terminal-body { padding: 16px; }
+            .cta-group { flex-direction: column; width: 100%; max-width: 300px; }
+            .btn { width: 100%; text-align: center; }
+        }
+
+        /* Small Mobile Phones */
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 2rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .tech-grid { grid-template-columns: repeat(2, 1fr); }
+            .terminal { border-radius: 8px; margin-top: 40px; }
+            .comparison-table th, .comparison-table td { padding: 12px 16px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -460,25 +537,27 @@
     <h2>v1.0 vs v2.0 Comparison</h2>
     <p class="subtitle">From a prototype to a production-ready enterprise platform.</p>
 
-    <table class="comparison-table">
-        <thead>
-            <tr><th>Feature</th><th>v1.0 (1%)</th><th>v2.0 (100%)</th></tr>
-        </thead>
-        <tbody>
-            <tr><td>Language Parsing</td><td class="tag-old">Regex heuristics</td><td class="tag-new">Real AST parsing (Python ast module)</td></tr>
-            <tr><td>Language Support</td><td class="tag-old">Generic</td><td class="tag-new">Plugin adapters (Python, JS, TS, Java)</td></tr>
-            <tr><td>AI Providers</td><td class="tag-old">Hardcoded stubs</td><td class="tag-new">Multi-provider (Claude, GPT-4, Ollama) + retry</td></tr>
-            <tr><td>Caching</td><td class="tag-old">None</td><td class="tag-new">Semantic LRU cache with TTL</td></tr>
-            <tr><td>Crash Recovery</td><td class="tag-old">None</td><td class="tag-new">Checkpoint-based resume</td></tr>
-            <tr><td>Rollback</td><td class="tag-old">None</td><td class="tag-new">Atomic snapshots + transaction log</td></tr>
-            <tr><td>Diff Viewer</td><td class="tag-old">None</td><td class="tag-new">Unified + HTML + semantic diffs</td></tr>
-            <tr><td>Observability</td><td class="tag-old">Print statements</td><td class="tag-new">JSON logging, Prometheus, tracing</td></tr>
-            <tr><td>Extensibility</td><td class="tag-old">None</td><td class="tag-new">11-phase hook system</td></tr>
-            <tr><td>Dashboard</td><td class="tag-old">CLI only</td><td class="tag-new">FastAPI REST + WebSocket</td></tr>
-            <tr><td>Infrastructure</td><td class="tag-old">None</td><td class="tag-new">Docker Compose (Redis + Celery)</td></tr>
-            <tr><td>Tests</td><td class="tag-old">1 test file</td><td class="tag-new">Unit + Integration test suites</td></tr>
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="comparison-table">
+            <thead>
+                <tr><th>Feature</th><th>v1.0 (1%)</th><th>v2.0 (100%)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Language Parsing</td><td class="tag-old">Regex heuristics</td><td class="tag-new">Real AST parsing (Python ast module)</td></tr>
+                <tr><td>Language Support</td><td class="tag-old">Generic</td><td class="tag-new">Plugin adapters (Python, JS, TS, Java)</td></tr>
+                <tr><td>AI Providers</td><td class="tag-old">Hardcoded stubs</td><td class="tag-new">Multi-provider (Claude, GPT-4, Ollama) + retry</td></tr>
+                <tr><td>Caching</td><td class="tag-old">None</td><td class="tag-new">Semantic LRU cache with TTL</td></tr>
+                <tr><td>Crash Recovery</td><td class="tag-old">None</td><td class="tag-new">Checkpoint-based resume</td></tr>
+                <tr><td>Rollback</td><td class="tag-old">None</td><td class="tag-new">Atomic snapshots + transaction log</td></tr>
+                <tr><td>Diff Viewer</td><td class="tag-old">None</td><td class="tag-new">Unified + HTML + semantic diffs</td></tr>
+                <tr><td>Observability</td><td class="tag-old">Print statements</td><td class="tag-new">JSON logging, Prometheus, tracing</td></tr>
+                <tr><td>Extensibility</td><td class="tag-old">None</td><td class="tag-new">11-phase hook system</td></tr>
+                <tr><td>Dashboard</td><td class="tag-old">CLI only</td><td class="tag-new">FastAPI REST + WebSocket</td></tr>
+                <tr><td>Infrastructure</td><td class="tag-old">None</td><td class="tag-new">Docker Compose (Redis + Celery)</td></tr>
+                <tr><td>Tests</td><td class="tag-old">1 test file</td><td class="tag-new">Unit + Integration test suites</td></tr>
+            </tbody>
+        </table>
+    </div>
 </section>
 
 <!-- TECH STACK -->
